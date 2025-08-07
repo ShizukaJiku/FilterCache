@@ -7,13 +7,9 @@ import cache.provider.DataRequest;
 import cache.provider.DataResponse;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class DataProviderParallelMode<T extends Identifiable<I>, I extends Comparable<I>> implements DataProviderModeStrategy<T, I> {
-
-  private final ExecutorService executor = Executors.newFixedThreadPool(4);
 
   @Override
   public DataResponse<T, I> getDataOfProvider(
@@ -27,12 +23,11 @@ public class DataProviderParallelMode<T extends Identifiable<I>, I extends Compa
           DataRequest<T, I> dataRequest,
           DataProvider<T, I> dataProvider,
           Consumer<DataResponse<T, I>> responseConsumer) {
-
     for (Integer page : dataRequest.getPages()) {
       CompletableFuture.runAsync(() -> {
         var response = dataProvider.requestData(dataRequest, page);
         responseConsumer.accept(response);
-      }, executor);
+      });
     }
   }
 }
